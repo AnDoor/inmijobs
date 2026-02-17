@@ -56,6 +56,7 @@ func main() {
 			r.Post("/", postHandler.CreatePost)
 			r.Put("/{id}", postHandler.EditPost)
 			r.Get("/{id}", postHandler.GetByID)
+			r.Delete("/{id}", postHandler.DeletePost)
 		})
 
 		r.Route("/comments", func(r chi.Router) {

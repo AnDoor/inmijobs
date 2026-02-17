@@ -2,15 +2,17 @@ package repository
 
 import (
 	"context"
-
 	"github.com/Gabo-div/bingo/inmijobs/backend-core/internal/model"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type PostRepo interface {
 	EditPost(ctx context.Context, postID uint, p model.Post) (model.Post, error)
 	CreatePost(ctx context.Context, post *model.Post) error
 	GetByID(ctx context.Context, id uint) (*model.Post, error)
+	DeletePost(ctx context.Context, id uint) (*model.Post, error)
+	IsAlreadyDeleted(ctx context.Context, id uint) bool
 }
 
 type postRepository struct {
@@ -81,4 +83,22 @@ func (r *postRepository) CreatePost(ctx context.Context, post *model.Post) error
 		return err
 	}
 	return nil
+}
+
+func (r *postRepository) DeletePost(ctx context.Context, id uint) (*model.Post, error) {
+	post := model.Post{ID: id}
+
+	if err := r.db.WithContext(ctx).Clauses(clause.Returning{}).Delete(&post).Error; err != nil {
+		return nil, err
+	}
+	return &post, nil
+}
+
+func (r *postRepository) IsAlreadyDeleted(ctx context.Context, id uint) bool {
+	post := model.Post{ID: id}
+
+	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&post).Error; err != nil {
+		return true
+	}
+	return false
 }

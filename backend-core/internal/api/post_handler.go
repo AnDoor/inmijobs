@@ -75,7 +75,7 @@ func (p PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.RespondJSON(w, http.StatusOK, createdPost)
+	utils.RespondJSON(w, http.StatusCreated, createdPost)
 }
 
 func (h *PostHandler) GetByID(w http.ResponseWriter, r *http.Request) {
@@ -95,6 +95,31 @@ func (h *PostHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		} else {
 			utils.RespondError(w, http.StatusInternalServerError, "Error interno al obtener el post")
 		}
+		return
+	}
+
+	utils.RespondJSON(w, http.StatusOK, post)
+}
+
+func (p PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
+
+	//Get user ID from the header
+	// user, err := h.authService.UserFromHeader(r.Context(), r.Header)
+	// if err != nil {
+	// 	utils.RespondError(w, http.StatusUnauthorized, "Unauthorized")
+	// 	return
+	// }
+
+	idParam := chi.URLParam(r, "id")
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		utils.RespondError(w, http.StatusBadRequest, "Invalid post ID")
+		return
+	}
+
+	post, err := p.svc.DeletePost(r.Context(), uint(id))
+	if err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
